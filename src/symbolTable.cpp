@@ -34,25 +34,6 @@ void SymbolTable::backpatchWordDirectiveAddresses(SectionTable* sectionTable) {
       // unsigned int offset, int symbolNumber, int addend, RelocationType type, string symName
       RelatableEntry *rela = new RelatableEntry(bp->address, relaNumber, 0, R_X86_64_32S, symbolName);
       sectionTable->getSection(bp->sectionNum)->relocationTable->addRelaEntry(rela);
-      // if(!s->defined || s->isGlobal) { 
-      //   // Napravi relokacioni zapis
-      //   unsigned short relaNumber;
-      //   string symbolName;
-      //   if(s->isGlobal) {
-      //     relaNumber = s->number;
-      //     symbolName = s->symbolName;
-      //   } else {
-      //     relaNumber = bp->sectionNum;
-      //     symbolName = sectionTable->getSection(bp->sectionNum)->name;
-      //   }
-      //   // unsigned int offset, int symbolNumber, int addend, RelocationType type, string symName
-      //   RelatableEntry *rela = new RelatableEntry(bp->address, relaNumber, 0, R_X86_64_32S, symbolName);
-      //   sectionTable->getSection(bp->sectionNum)->relocationTable->addRelaEntry(rela);
-      // } else if(s->defined) {
-      //   // upis u sadrzaj sekcije
-      //   sectionTable->getSection(bp->sectionNum)->addInstruction(s->value, bp->address);
-      //   cout << "Upisana vrednost za .word: " << s->value << " " << bp->address << endl;
-      // } 
     }
   }
 } 
