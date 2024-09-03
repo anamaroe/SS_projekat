@@ -1,11 +1,11 @@
 #ifndef assembler_hpp
 #define assembler_hpp
 
-#include "symbolTable.hpp"
-#include "sectionTable.hpp"
-#include "relocationTable.hpp"
 #include "../misc/parser.hpp"
 #include "../misc/lexer.hpp"
+#include "symbolTable.hpp"
+#include "relocationTable.hpp"
+#include "sectionTable.hpp"
 #include <iostream>
 #include <fstream>    
 using namespace std;
@@ -15,13 +15,15 @@ class Assembler {
 
 private:
   SymbolTable *symbolTable;
+
   SectionTable *sectionTable;
 
   int locationCounter;
+  
   int currSection;        
+  
   string currSectionName;
-  bool endFound;
-
+  
 public: 
   enum ArLoSInstr   { ADD, SUB, MUL, DIV, NOT, AND, OR, XOR, SHL, SHR };
   enum StackInstr   { PUSH, POP };
@@ -92,27 +94,37 @@ public:
 public:
 
   Assembler();
+
   ~Assembler();
+
+  void createAssemblerOutputFiles(string);
+
+  // popunjavanje sadrzaja string tabele (sekcije)
+  void fillStringTableContent(Section*);
+
+  void createStringAndSymbolSections();
+
+  int getStringTableIndex();
+
+  int getSymbolTableIndex();
+
+  void RELA_makeABS_32_Relocation(unsigned int locationCounter, Symbol* sumbol, Section *section);
+  void RELA_makeABS_12_Relocation(unsigned int locationCounter, Symbol* sumbol);
+  void RELA_makePC_Relocation(unsigned int locationCounter, Symbol* sumbol);
+
+  void generatePools();
+
+  void generateRelaSections();
 
   int assemble(string);
   
-  /*
-  proverava da li je literal u temp pool-u trenutne sekcije, dodaje ako nije
-  */
+  // proverava da li je literal u temp pool-u trenutne sekcije, dodaje ako nije
   void helperLoadBigLiteral(int bigLit);
-  
-  /*
-  proverava da li je simbol u tab_sim i u temp pool-u trenutne sekcije, dodaje ako nije
-  */
+
+  // proverava da li je simbol u tab_sim i u temp pool-u trenutne sekcije, dodaje ako nije
   void helperLoadBigLiteralSymbol(string);
 
-  bool isLiteralBig(int);
-
-  void writeRelocTables();
-  void writeSymbolTable();
-  void writeSectionTable();
-
-  void writeToFile(char *);
+  bool isLiteralBig(int); 
 };
 
 extern Assembler* assembler;

@@ -6,11 +6,13 @@ ASSEMBLER_SRC = src/assembler.cpp\
 	misc/lexer.cpp\
 	misc/parser.cpp\
 
-LINKER_SRC =
+LINKER_SRC = src/linker.cpp\
+	src/main_linker.cpp\
 
-EMULATOR_SRC =
+EMULATOR_SRC = src/emulator.cpp\
+	src/main_emulator.cpp\
 
-all: clean assembler linker emulator
+all: clean asembler linker emulator
 
 asembler: flex
 	g++ -Iinc -o ${@} ${ASSEMBLER_SRC}
@@ -27,7 +29,7 @@ bison:
 flex: bison
 	flex misc/lex.l
 
-clean: clean_ass clean_emu clean_link
+clean: clean_ass clean_link clean_emu
 
 clean_ass:
 	rm -f misc/lexer.cpp 
@@ -36,7 +38,14 @@ clean_ass:
 	rm -f misc/parser.hpp
 	rm -f asembler
 	rm -f tests/*.txt
-
-clean_emu:
+	rm -f tests/*.o
 
 clean_link:
+	rm -f linker
+	rm -f tests/*.hex
+
+clean_emu:
+	rm -f emulator
+
+dump: 
+	hexdump -C tests/main.o > main.dump

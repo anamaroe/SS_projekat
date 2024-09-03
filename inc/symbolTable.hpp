@@ -3,12 +3,14 @@
 
 #include "elfTypes.hpp"
 #include <vector>
-#include <string>
 #include "sectionTable.hpp"
-
+#include <iostream>
+#include <iomanip>
+#include <string>
 using namespace std;
 
 class SectionTable;
+
 
 class Symbol {
 
@@ -25,7 +27,7 @@ public:
 
   short sectionNumber; 
 
-  unsigned short number;
+  int number;
 
   unsigned int value;  
 
@@ -33,11 +35,11 @@ public:
   
   bool defined; 
 
-  vector<Backpatch*> flink;
+  vector<Backpatch*> flink; 
 
-  //Backpatch* flink; // ovo je moja info lista za pamcenje svih koriscenja simbola, koristim samo za word direktivu...
+  unsigned int size; 
 
-  unsigned int size; // za sekcije, simboli -1
+  int stringTableIndex = -1; // postavlja se pri pravljenju string tabele
 
   static int counter;
 
@@ -45,50 +47,50 @@ public:
   
   Symbol() {}
 
-  Symbol(string name, short sectionNum, unsigned int value, bool isGlobal, bool defined, unsigned int size) {
+  Symbol(string name, short sectionNum, unsigned int value, bool isGlobal, bool defined) {
       this->defined = defined;
       this->isGlobal = isGlobal;
       this->number = counter++;
       this->sectionNumber = sectionNum;
-      this->size = size;
+      this->size = 0;
       this->symbolName = name;
       this->value = value;
   }
 
   void addBackpatchAddr(unsigned int address, short section) { 
     flink.push_back(new Backpatch(address, section));
-    // if(!flink) {
-    //   flink = new Backpatch(address, section);
-    // } else {
-    //   Backpatch* cur = flink;
-    //   while(cur->next != nullptr) cur = cur->next;
-    //   // sad pokazuje na zadnji
-    //   cur->next = new Backpatch(address, section);
-    // }
   }
 
   int getNumber() { return number; }
   
   void setSectionNumber(int num) { sectionNumber = num; }
 
-  // da li je ovo uopste potrebno
-  // void resolveLabelReference(int locationCounter, SectionTable *sect); // ovo je zapravo backpatch
-  // idem kroz info listu simbola. upisujem val na lokacije u contentima sekcija
 
 };
+
+
 
 class SymbolTable {
 
 public:
-
   vector<Symbol*> symbolTable;
+
   Symbol* getSymbol(string name);
+  
   Symbol* getSymbol(int index);
-  void add(Symbol*);
-  int backpatch(); // TO DO?
+  
+  void add(Symbol* symbol) { symbolTable.push_back(symbol); }
+  
+  void writeSymTable(); // da li ovo koristim?
+  
+  int tableSize() { return symbolTable.size(); }
+  
   ~SymbolTable();
-  void writeSymTable();
-  int tableSize();
+  
+  /* ispravljam vrednosti simbola kod word direktive; pravim relokacioni zapis ako je potrebno */
+  void backpatchWordDirectiveAddresses(SectionTable*);
+
+  int getMaxNumber() { return symbolTable.back()->getNumber(); }
 
 };
 

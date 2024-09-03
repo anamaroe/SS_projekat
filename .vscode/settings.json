@@ -45,7 +45,8 @@
     "streambuf": "cpp",
     "cinttypes": "cpp",
     "typeinfo": "cpp",
-    "iomanip": "cpp"
+    "iomanip": "cpp",
+    "ctime": "cpp"
   },
   "C_Cpp.vcFormat.indent.braces": true,
   "C_Cpp.formatting": "clangFormat"

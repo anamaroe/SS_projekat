@@ -4,37 +4,51 @@
 #include "elfTypes.hpp"
 #include "symbolTable.hpp"
 #include <vector>
-
+#include <string>
 using namespace std;
+
+
 
 class RelatableEntry {
 
 private:
+  unsigned int offset;  // ofset u generisanom kodu 
 
-  unsigned int offset; // ofset u generisanom kodu 
-  int symbolRefNum; // number simbola u ts
-  int addend; // u odnosu na pocetak sekcije kod lokalnih simbola, u tom slucaju simbol ref pokazuje na sekciju
+  int symbolRefNum;     // number simbola u ts
 
-  /*
-  addend: -- offset
-  kod lokalnih podataka (koji ne idu 
-  u tabelu simbola) kao simbol se stavlja 
-  sekcija u kojoj se nalaze
-  addend je ofset od pocetka sekcije do tog simbola    
-  */
-  public: 
-  unsigned int getOffset() { return offset; }
-  int getSymbolRefNum() { return symbolRefNum; }
-  int getAddend() { return addend; }
+  int addend;           // u odnosu na pocetak sekcije kod lokalnih simbola, u tom slucaju simbol ref pokazuje na sekciju
+
+  RelocationType type;
+
+  string symbolName;
+ 
+public: 
+  RelatableEntry(unsigned int offset, int symbolNumber, int addend, RelocationType type, string symName) : 
+    offset(offset), symbolRefNum(symbolNumber), addend(addend), type(type), symbolName(symName) {}
+  
+  unsigned int getOffset();
+
+  int getSymbolRefNum();
+
+  int getAddend();
+
+  RelocationType getType();
+
 };
 
+
+
 class RelocationTable {
+
 public:
+  int section;
 
+  RelocationTable(int sectionNum) : section(sectionNum) {}
+  
   vector<RelatableEntry*> relocationTable;
-
+  
   void addRelaEntry(RelatableEntry*);
-  RelatableEntry* getRelaEntry(int index);
+
 };
 
 #endif

@@ -20,7 +20,5 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	assembler->writeToFile(argv[2]);
-
 	delete assembler;
 }

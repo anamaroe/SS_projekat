@@ -1,21 +1,10 @@
 #include "../inc/symbolTable.hpp"
-#include <iostream>
-#include <iomanip>
-#include <string.h>
-using namespace std;
+
 
 int Symbol::counter = 0;
 
-void SymbolTable::add(Symbol* symbol) {
-  //cout << "Dodaje se: " << symbol->symbolName << endl;
-  symbolTable.push_back(symbol);
-  //writeSymTable();
-} 
-
-Symbol* SymbolTable::getSymbol(string name) {
-  //cout << "Dohvatam simbol: " << name << endl;
-  for(Symbol* s : symbolTable) {
-    //cout << "u TS sam naisla na: " << s->symbolName << endl;
+Symbol* SymbolTable::getSymbol(string name) { 
+  for(Symbol* s : symbolTable) { 
     if(s->symbolName == name) return s;
   }
   return nullptr;
@@ -26,43 +15,52 @@ Symbol* SymbolTable::getSymbol(int index) {
   return symbolTable[index];
 }
 
-// T0 D0
-int SymbolTable::backpatch() {
-  // for(Symbol *s : symbolTable) {
-  //   if(s->defined) {
-  //     while(s->flink) {
-  //       break;
-  //     }
-  //   }
-  //   else continue;
-  // } 
-  return 0;
-}
- 
-SymbolTable::~SymbolTable() {
-  for(auto symbol : symbolTable) {
-    delete symbol;
+/*
+  pravljenje relokacionih zapisa tipa ABS kod .word direktive;
+  ili upis literalne vrednosti ako je poznata
+*/
+void SymbolTable::backpatchWordDirectiveAddresses(SectionTable* sectionTable) {
+  for(Symbol* s : symbolTable) {
+    for(Symbol::Backpatch *bp : s->flink) {
+      unsigned short relaNumber;
+      string symbolName;
+      if(s->isGlobal) {
+        relaNumber = s->number;
+        symbolName = s->symbolName;
+      } else {
+        relaNumber = bp->sectionNum;
+        symbolName = sectionTable->getSection(bp->sectionNum)->name;
+      }
+      // unsigned int offset, int symbolNumber, int addend, RelocationType type, string symName
+      RelatableEntry *rela = new RelatableEntry(bp->address, relaNumber, 0, R_X86_64_32S, symbolName);
+      sectionTable->getSection(bp->sectionNum)->relocationTable->addRelaEntry(rela);
+      // if(!s->defined || s->isGlobal) { 
+      //   // Napravi relokacioni zapis
+      //   unsigned short relaNumber;
+      //   string symbolName;
+      //   if(s->isGlobal) {
+      //     relaNumber = s->number;
+      //     symbolName = s->symbolName;
+      //   } else {
+      //     relaNumber = bp->sectionNum;
+      //     symbolName = sectionTable->getSection(bp->sectionNum)->name;
+      //   }
+      //   // unsigned int offset, int symbolNumber, int addend, RelocationType type, string symName
+      //   RelatableEntry *rela = new RelatableEntry(bp->address, relaNumber, 0, R_X86_64_32S, symbolName);
+      //   sectionTable->getSection(bp->sectionNum)->relocationTable->addRelaEntry(rela);
+      // } else if(s->defined) {
+      //   // upis u sadrzaj sekcije
+      //   sectionTable->getSection(bp->sectionNum)->addInstruction(s->value, bp->address);
+      //   cout << "Upisana vrednost za .word: " << s->value << " " << bp->address << endl;
+      // } 
+    }
   }
-}
-
-/* ....................... preparaviti: mozda i dalje nije poznata vrednost simbola ....................... */
-// idem kroz info listu simbola. upisujem val na lokacije u contentima sekcija
-// void Symbol::resolveLabelReference(int locationCounter, SectionTable *sect) {
-//   Section* section = nullptr;
-//   while(flink) {
-//     // idem kroz info listu i i pisem u contente sekcija...
-//     section = sect->getSection(flink->sectionNum);
-//     section->addInstruction(locationCounter, flink->address);
-//     Backpatch* oldFlink = this->flink;
-//     this->flink = this->flink->next;
-//     delete oldFlink;
-//   }
-// }
+} 
 
 void SymbolTable::writeSymTable() {
-  cout << " ------------------------------------------------------------------------------------------------------- " << endl;
-  cout << "     Symbol    :    Number    :    Section    :    Value    :    IsGLobal    :   Defined    :    Size    " << endl;
-  cout << " ------------------------------------------------------------------------------------------------------- " << endl;
+  cout << " ---------------------------------------------------------------------------------------------------------------------- " << endl;
+  cout << "     Symbol    :    Number    :    Section    :    Value    :    IsGLobal    :   Defined    :    Size   :    str_ind    " << endl;
+  cout << " ---------------------------------------------------------------------------------------------------------------------- " << endl;
   int size = symbolTable.size();
   int i = 0;
   while(i < size) {
@@ -72,17 +70,17 @@ void SymbolTable::writeSymTable() {
       setw(18) << setfill(' ') << left << symbolTable[i]->value            << 
       setw(16) << setfill(' ') << left << symbolTable[i]->isGlobal         <<  
       setw(15) << setfill(' ') << left << symbolTable[i]->defined          <<  
-      setw(16) << setfill(' ') << left << symbolTable[i]->size             << 
+      setw(16) << setfill(' ') << left << hex << symbolTable[i]->size << dec << 
+      setw(15) << setfill(' ') << left << symbolTable[i]->stringTableIndex << 
       endl;
       i++;
   }
   cout << " ------------------------------------------------------------------------------------------------------- " << endl;
 }
-
-int SymbolTable::tableSize() {
-  int size = 0;
-  for (Symbol *s : symbolTable) {
-    size++;
+ 
+SymbolTable::~SymbolTable() {
+  for(auto symbol : symbolTable) {
+    delete symbol;
   }
-  return size;
-}
+} 
+ 
